@@ -2,6 +2,8 @@
 
 Local web app for discovering Android devices over Wi-Fi, identifying connected products, installing APK files, and reviewing Android TV packages for safe disable or user-level uninstall actions.
 
+![ADB Installer screenshot](docs/assets/screenshot.png)
+
 ## Requirements
 
 - Bun
