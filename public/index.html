@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Local ADB web utility for scanning Wi-Fi devices, identifying products, and installing APKs."
+    />
+    <title>ADB Installer</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" aria-labelledby="app-title">
+      <header class="topbar">
+        <div>
+          <p class="kicker">Local ADB over Wi-Fi</p>
+          <h1 id="app-title">ADB Installer</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="button button-secondary" id="scan-button" type="button">
+            <i data-lucide="refresh-cw" aria-hidden="true"></i>
+            <span>Scan</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="status-strip" aria-label="ADB status">
+        <div>
+          <span class="metric" id="device-count">0</span>
+          <span class="metric-label">devices</span>
+        </div>
+        <div>
+          <span class="metric" id="selected-product">None</span>
+          <span class="metric-label">selected product</span>
+        </div>
+        <div>
+          <span class="metric" id="transport-state">Idle</span>
+          <span class="metric-label">transport</span>
+        </div>
+      </section>
+
+      <div class="workspace-grid">
+        <section class="panel device-panel" aria-labelledby="devices-title">
+          <div class="panel-heading">
+            <div>
+              <h2 id="devices-title">Devices</h2>
+              <p id="scan-state">Ready</p>
+            </div>
+            <span class="badge" id="scan-badge">ADB</span>
+          </div>
+
+          <form class="connect-row" id="connect-form">
+            <label class="sr-only" for="address-input">Address</label>
+            <input id="address-input" name="address" placeholder="192.168.1.42:5555" autocomplete="off" />
+            <button class="button button-ghost" id="connect-button" type="submit">
+              <i data-lucide="wifi" aria-hidden="true"></i>
+              <span>Connect</span>
+            </button>
+          </form>
+
+          <div class="device-list" id="device-list"></div>
+          <p class="empty-state" id="empty-devices">No devices found</p>
+        </section>
+
+        <section class="panel workflow-panel" aria-labelledby="install-title">
+          <div class="panel-heading">
+            <div>
+              <h2 id="install-title">Install APK</h2>
+              <p id="selected-device">Select a connected device</p>
+            </div>
+            <span class="badge" id="install-badge">Ready</span>
+          </div>
+
+          <label class="drop-zone" id="drop-zone" for="apk-input">
+            <input id="apk-input" type="file" accept=".apk,application/vnd.android.package-archive" />
+            <i data-lucide="upload-cloud" aria-hidden="true"></i>
+            <span id="apk-name">Choose APK</span>
+            <small id="apk-meta">No file selected</small>
+          </label>
+
+          <div class="install-actions">
+            <button class="button button-primary" id="install-button" type="button" disabled>
+              <i data-lucide="hard-drive-download" aria-hidden="true"></i>
+              <span>Install</span>
+            </button>
+            <p class="notice" id="notice" role="status" aria-live="polite"></p>
+          </div>
+
+          <section class="cleanup-panel" aria-labelledby="cleanup-title">
+            <div class="panel-heading compact cleanup-heading">
+              <div>
+                <h3 id="cleanup-title">Apps &amp; TV Cleanup</h3>
+                <p id="cleanup-summary">Load apps from the selected device</p>
+              </div>
+              <i data-lucide="shield-off" aria-hidden="true"></i>
+            </div>
+
+            <div class="cleanup-actions">
+              <button class="button button-secondary" id="load-packages-button" type="button">
+                <i data-lucide="list" aria-hidden="true"></i>
+                <span>Load apps</span>
+              </button>
+              <button class="button button-ghost" id="preset-packages-button" type="button" disabled>
+                <i data-lucide="sparkles" aria-hidden="true"></i>
+                <span>TV preset</span>
+              </button>
+            </div>
+
+            <div class="package-toolbar">
+              <label class="field" for="package-search">
+                <span>Search</span>
+                <input id="package-search" autocomplete="off" placeholder="com.google.android..." />
+              </label>
+              <label class="field" for="package-action">
+                <span>Action</span>
+                <select id="package-action">
+                  <option value="disable">Disable</option>
+                  <option value="uninstall">Uninstall for user</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="package-list" id="package-list"></div>
+            <p class="empty-state" id="empty-packages">Load apps to review installed packages</p>
+
+            <div class="cleanup-footer">
+              <label class="confirm-row" for="package-confirm">
+                <input id="package-confirm" type="checkbox" />
+                <span>Confirm selected packages</span>
+              </label>
+              <button class="button button-danger" id="apply-packages-button" type="button" disabled>
+                <i data-lucide="trash-2" aria-hidden="true"></i>
+                <span>Apply</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="activity-panel" aria-labelledby="activity-title">
+            <div class="panel-heading compact">
+              <h3 id="activity-title">Activity</h3>
+              <i data-lucide="terminal" aria-hidden="true"></i>
+            </div>
+            <ol class="activity-log" id="activity-log" aria-live="polite"></ol>
+            <p class="empty-state" id="empty-activity">No activity yet</p>
+          </section>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
