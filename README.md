@@ -50,6 +50,8 @@ bun run start
 
 Open `http://localhost:3000`.
 
+The server binds `127.0.0.1` by default and accepts only same-origin API calls. Set `HOST=0.0.0.0` to reach it from another device on your LAN; anyone who can reach the port can run ADB commands and disable or uninstall packages.
+
 ## Checks
 
 ```bash
