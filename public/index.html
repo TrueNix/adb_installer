@@ -60,6 +60,19 @@
             </button>
           </form>
 
+          <details class="pair-panel">
+            <summary>Pair wireless debugging</summary>
+            <form class="connect-row" id="pair-form">
+              <label class="sr-only" for="pair-address">Pairing address</label>
+              <input id="pair-address" name="pair-address" placeholder="192.168.1.42:37829" autocomplete="off" />
+              <label class="sr-only" for="pair-code">Pairing code</label>
+              <input id="pair-code" name="pair-code" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" />
+              <button class="button button-ghost" id="pair-button" type="submit">
+                <span>Pair</span>
+              </button>
+            </form>
+          </details>
+
           <div class="device-list" id="device-list"></div>
           <p class="empty-state" id="empty-devices">No devices found</p>
         </section>
@@ -109,6 +122,15 @@
             </div>
 
             <div class="package-toolbar">
+              <label class="field" for="package-filter">
+                <span>Show</span>
+                <select id="package-filter">
+                  <option value="all">All apps</option>
+                  <option value="third-party">Third-party</option>
+                  <option value="disabled">Disabled</option>
+                  <option value="uninstalled">Uninstalled for user</option>
+                </select>
+              </label>
               <label class="field" for="package-search">
                 <span>Search</span>
                 <input id="package-search" autocomplete="off" placeholder="com.google.android..." />
@@ -117,7 +139,9 @@
                 <span>Action</span>
                 <select id="package-action">
                   <option value="disable">Disable</option>
+                  <option value="enable">Enable</option>
                   <option value="uninstall">Uninstall for user</option>
+                  <option value="restore">Restore uninstalled</option>
                 </select>
               </label>
             </div>

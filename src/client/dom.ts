@@ -29,8 +29,13 @@ export type ViewElements = {
   readonly loadPackagesButton: HTMLButtonElement
   readonly packageAction: HTMLSelectElement
   readonly packageConfirm: HTMLInputElement
+  readonly packageFilter: HTMLSelectElement
   readonly packageList: HTMLElement
   readonly packageSearch: HTMLInputElement
+  readonly pairAddressInput: HTMLInputElement
+  readonly pairButton: HTMLButtonElement
+  readonly pairCodeInput: HTMLInputElement
+  readonly pairForm: HTMLFormElement
   readonly presetPackagesButton: HTMLButtonElement
   readonly scanBadge: HTMLElement
   readonly scanButton: HTMLButtonElement
@@ -71,8 +76,13 @@ export function getViewElements(): ViewElements {
     loadPackagesButton: requiredElement("load-packages-button", HTMLButtonElement),
     packageAction: requiredElement("package-action", HTMLSelectElement),
     packageConfirm: requiredElement("package-confirm", HTMLInputElement),
+    packageFilter: requiredElement("package-filter", HTMLSelectElement),
     packageList: requiredElement("package-list", HTMLElement),
     packageSearch: requiredElement("package-search", HTMLInputElement),
+    pairAddressInput: requiredElement("pair-address", HTMLInputElement),
+    pairButton: requiredElement("pair-button", HTMLButtonElement),
+    pairCodeInput: requiredElement("pair-code", HTMLInputElement),
+    pairForm: requiredElement("pair-form", HTMLFormElement),
     presetPackagesButton: requiredElement("preset-packages-button", HTMLButtonElement),
     scanBadge: requiredElement("scan-badge", HTMLElement),
     scanButton: requiredElement("scan-button", HTMLButtonElement),

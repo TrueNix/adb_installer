@@ -86,12 +86,15 @@ function cleanupSummary(state: UiState): string {
     return "Load apps from the selected device"
   }
   const selected = state.selectedPackages.length
-  return `${state.packages.length} apps loaded · ${selected} selected`
+  const scope = state.packageFilter === "all" ? "apps" : `${state.packageFilter} apps`
+  return `${state.packages.length} ${scope} loaded · ${selected} selected`
 }
 
 function emptyPackageText(state: UiState, visibleCount: number): string {
   if (state.packages.length === 0) {
-    return "Load apps to review installed packages"
+    return state.packageFilter === "all"
+      ? "Load apps to review installed packages"
+      : `No ${state.packageFilter} packages`
   }
   if (visibleCount === 0) {
     return "No packages match this search"
@@ -104,10 +107,16 @@ export function renderPackages(state: UiState, elements: ViewElements): void {
   const visiblePackages = filteredPackages(state)
   elements.cleanupSummary.textContent = cleanupSummary(state)
   elements.packageSearch.value = state.packageSearch
+  elements.packageFilter.value = state.packageFilter
   elements.packageAction.value = state.packageAction
   elements.packageConfirm.checked = state.packageConfirmed
   elements.loadPackagesButton.disabled = !connected || state.packageLoading || state.packageApplying
-  elements.presetPackagesButton.disabled = state.packages.length === 0 || state.packageApplying
+  elements.packageFilter.disabled = !connected || state.packageApplying
+  elements.presetPackagesButton.disabled =
+    state.packages.length === 0 ||
+    state.packageApplying ||
+    state.packageFilter === "disabled" ||
+    state.packageFilter === "uninstalled"
   elements.packageSearch.disabled = state.packages.length === 0 || state.packageApplying
   elements.packageAction.disabled = state.packageApplying
   elements.packageConfirm.disabled = state.selectedPackages.length === 0 || state.packageApplying

@@ -1,4 +1,4 @@
-import type { PackageAction } from "../shared"
+import type { PackageAction, PackageFilter } from "../shared"
 import type { ViewElements } from "./dom"
 import { type UiState, appendEvents, clearNotice, getState, localEvent, setState } from "./state"
 
@@ -20,22 +20,41 @@ function packageActionFromValue(value: string): PackageAction | null {
       return "disable"
     case "uninstall":
       return "uninstall"
+    case "enable":
+      return "enable"
+    case "restore":
+      return "restore"
     default:
       return null
   }
 }
 
+function packageFilterFromValue(value: string): PackageFilter | null {
+  switch (value) {
+    case "all":
+      return "all"
+    case "third-party":
+      return "third-party"
+    case "disabled":
+      return "disabled"
+    case "uninstalled":
+      return "uninstalled"
+    default:
+      return null
+  }
+}
+
+let loadSequence = 0
+
 export async function loadPackages(sync: SyncView): Promise<void> {
   const state = getState()
-  if (state.packageLoading) {
-    return
-  }
   const serial = selectedConnectedSerial(state)
   if (serial === null) {
     setCleanupError("Select a connected device before loading apps")
     sync()
     return
   }
+  const sequence = ++loadSequence
   setState({
     notice: clearNotice(),
     packageLoading: true,
@@ -45,8 +64,8 @@ export async function loadPackages(sync: SyncView): Promise<void> {
   sync()
   try {
     const { requestPackages } = await import("./api")
-    const response = await requestPackages(serial)
-    if (getState().selectedSerial !== serial) {
+    const response = await requestPackages(serial, state.packageFilter)
+    if (sequence !== loadSequence) {
       return
     }
     setState({
@@ -57,9 +76,13 @@ export async function loadPackages(sync: SyncView): Promise<void> {
     })
     appendEvents(response.events)
   } catch (error) {
-    setCleanupError(error instanceof Error ? error.message : "Package cleanup failed")
+    if (sequence === loadSequence) {
+      setCleanupError(error instanceof Error ? error.message : "Package cleanup failed")
+    }
   } finally {
-    setState({ packageLoading: false })
+    if (sequence === loadSequence) {
+      setState({ packageLoading: false })
+    }
     sync()
   }
 }
@@ -151,6 +174,24 @@ export function bindPackageWorkflow(elements: ViewElements, sync: SyncView): voi
   elements.packageSearch.addEventListener("input", () => {
     setState({ packageSearch: elements.packageSearch.value })
     sync()
+  })
+  elements.packageFilter.addEventListener("change", () => {
+    const filter = packageFilterFromValue(elements.packageFilter.value)
+    if (filter === null) {
+      return
+    }
+    const action: PackageAction =
+      filter === "disabled" ? "enable" : filter === "uninstalled" ? "restore" : "disable"
+    setState({
+      packageAction: action,
+      packageConfirmed: false,
+      packageFilter: filter,
+      packageSearch: "",
+      packages: [],
+      selectedPackages: [],
+    })
+    sync()
+    void loadPackages(sync)
   })
   elements.packageAction.addEventListener("change", () => {
     const action = packageActionFromValue(elements.packageAction.value)

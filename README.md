@@ -2,6 +2,8 @@
 
 Local web app for discovering Android devices over Wi-Fi, identifying connected products, installing APK files, and reviewing Android TV packages for safe disable or user-level uninstall actions.
 
+Cleanup is reversible: `Show` filters the list to third-party, disabled, or uninstalled-for-user packages, and the action menu can `Enable` a disabled package or `Restore` one that was uninstalled for user `0`.
+
 ![ADB Installer screenshot](docs/assets/screenshot.png)
 
 ## Requirements
@@ -29,7 +31,7 @@ Menu labels vary by Google TV / Android TV version. Some devices call this `Wire
 4. Go back to `Settings` > `System` > `Developer options`.
 5. Enable `USB debugging` if shown.
 6. Enable `Wireless debugging` or `Network debugging`.
-7. If the TV shows a pairing screen, run `adb pair <tv-ip>:<pairing-port>` and enter the pairing code.
+7. If the TV shows a pairing screen, enter its address and 6-digit code under `Pair wireless debugging` in this app, or run `adb pair <tv-ip>:<pairing-port>` in a terminal. Pairing scans and connects afterwards.
 8. Connect with `adb connect <tv-ip>:<adb-port>`. On many Google TV devices the ADB port is `5555`, for example `adb connect 192.0.2.44:5555`.
 9. Accept the debugging authorization prompt on the TV.
 10. Start this app and click `Scan`, or enter the TV address manually and click `Connect`.
