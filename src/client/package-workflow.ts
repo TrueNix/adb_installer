@@ -46,6 +46,9 @@ export async function loadPackages(sync: SyncView): Promise<void> {
   try {
     const { requestPackages } = await import("./api")
     const response = await requestPackages(serial)
+    if (getState().selectedSerial !== serial) {
+      return
+    }
     setState({
       packages: response.packages,
       selectedPackages: [],

@@ -79,8 +79,26 @@ async function indexFile(acceptEncoding: string): Promise<Response> {
 
 function cleanFileName(fileName: string): string {
   const cleaned = fileName.replace(/[^\w.-]+/g, "_")
-  return cleaned.length > 0 ? cleaned : "upload.apk"
+  return cleaned.length > 0 && cleaned !== "." && cleaned !== ".." ? cleaned : "upload.apk"
 }
+
+app.use("/api/*", async (context, next): Promise<Response | undefined> => {
+  const origin = context.req.header("origin")
+  const host = context.req.header("host")
+  if (origin !== undefined && host !== undefined) {
+    let originHost = ""
+    try {
+      originHost = new URL(origin).host
+    } catch {
+      return context.json(apiFailure("Cross-origin request rejected"), 403)
+    }
+    if (originHost !== host) {
+      return context.json(apiFailure("Cross-origin request rejected"), 403)
+    }
+  }
+  await next()
+  return undefined
+})
 
 app.get("/", (context) => indexFile(context.req.header("accept-encoding") ?? ""))
 app.get("/styles.css", () =>
@@ -97,13 +115,17 @@ app.get("/app.js", () =>
     cacheControl: "no-store",
   }),
 )
-app.get("/chunks/:name", (context) =>
-  staticFile({
-    name: `chunks/${context.req.param("name")}`,
+app.get("/chunks/:name", (context) => {
+  const name = context.req.param("name")
+  if (!/^[A-Za-z0-9_-]+\.js$/.test(name)) {
+    return context.text("Not found", 404)
+  }
+  return staticFile({
+    name: `chunks/${name}`,
     contentType: "text/javascript; charset=utf-8",
     cacheControl: "no-store",
-  }),
-)
+  })
+})
 app.get(
   "/robots.txt",
   () =>
@@ -192,8 +214,17 @@ app.post("/api/packages/apply", async (context) => {
   }
 })
 
-app.notFound((context) => indexFile(context.req.header("accept-encoding") ?? ""))
+app.notFound((context) =>
+  context.req.path.startsWith("/api/")
+    ? context.json(apiFailure("Not found"), 404)
+    : indexFile(context.req.header("accept-encoding") ?? ""),
+)
 
-Bun.serve({ port, fetch: app.fetch })
+if (import.meta.main) {
+  const hostname = Bun.env["HOST"] ?? "127.0.0.1"
+  Bun.serve({ hostname, port, fetch: app.fetch })
 
-console.log(`ADB Installer running at http://localhost:${port}`)
+  console.log(`ADB Installer running at http://${hostname}:${port}`)
+}
+
+export { app }
