@@ -187,6 +187,16 @@ export async function connectAddress(address: string): Promise<ScanResponse> {
   return { devices, discovered: [], events }
 }
 
+export async function pairDevice(address: string, code: string): Promise<ScanResponse> {
+  const output = await runAdb(["pair", address, code], 60_000)
+  const scan = await scanDevices()
+  return {
+    devices: scan.devices,
+    discovered: scan.discovered,
+    events: [event("success", output.stdout.trim() || `Paired ${address}`), ...scan.events],
+  }
+}
+
 export async function installApk(serial: string, filePath: string): Promise<string> {
   const output = await runAdb(["-s", serial, "install", "-r", filePath], installTimeoutMs)
   return [output.stdout.trim(), output.stderr.trim()].filter(Boolean).join("\n")

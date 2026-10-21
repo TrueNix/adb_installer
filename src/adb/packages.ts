@@ -6,6 +6,7 @@ import {
   type PackageAction,
   type PackageActionRequest,
   type PackageActionResponse,
+  type PackageFilter,
   type PackageIcon,
   type PackageListResponse,
   type PackageOperation,
@@ -168,20 +169,77 @@ export function buildPackageOperation(operation: PackageOperation): readonly str
         "0",
         operation.packageName,
       ]
+    case "enable":
+      return ["-s", operation.serial, "shell", "pm", "enable", "--user", "0", operation.packageName]
+    case "restore":
+      return [
+        "-s",
+        operation.serial,
+        "shell",
+        "cmd",
+        "package",
+        "install-existing",
+        "--user",
+        "0",
+        operation.packageName,
+      ]
     default:
       return assertNever(operation.action)
   }
 }
 
-export async function listPackages(serial: string): Promise<PackageListResponse> {
-  const output = await runAdb(["-s", serial, "shell", "pm", "list", "packages"], packageTimeoutMs)
-  const packages = buildPackageInventory(parsePackageList(output.stdout))
+export function listPackagesArgs(serial: string, filter: PackageFilter): readonly string[] {
+  const base = ["-s", serial, "shell", "pm", "list", "packages"]
+  switch (filter) {
+    case "all":
+      return base
+    case "third-party":
+      return [...base, "-3"]
+    case "disabled":
+      return [...base, "-d"]
+    case "uninstalled":
+      return [...base, "-u"]
+    default:
+      return assertNever(filter)
+  }
+}
+
+async function readPackageNames(serial: string, filter: PackageFilter): Promise<readonly string[]> {
+  const output = await runAdb(listPackagesArgs(serial, filter), packageTimeoutMs)
+  return parsePackageList(output.stdout)
+}
+
+// `pm list packages -u` is installed plus uninstalled, so diff to recover the restorable set.
+async function uninstalledPackageNames(serial: string): Promise<readonly string[]> {
+  const [installed, withUninstalled] = await Promise.all([
+    readPackageNames(serial, "all"),
+    readPackageNames(serial, "uninstalled"),
+  ])
+  const installedNames = new Set(installed)
+  return withUninstalled.filter((name) => !installedNames.has(name))
+}
+
+export async function listPackages(
+  serial: string,
+  filter: PackageFilter,
+): Promise<PackageListResponse> {
+  const names =
+    filter === "uninstalled"
+      ? await uninstalledPackageNames(serial)
+      : await readPackageNames(serial, filter)
+  const packages = buildPackageInventory(names)
   const recommendedCount = packages.filter((entry) => entry.recommended).length
   return {
     serial,
+    filter,
     packages,
     recommendedCount,
-    events: [activity("success", `Loaded ${packages.length} package(s) from ${serial}`)],
+    events: [
+      activity(
+        "success",
+        `Loaded ${packages.length} ${filter === "all" ? "" : `${filter} `}package(s) from ${serial}`,
+      ),
+    ],
   }
 }
 
@@ -191,6 +249,10 @@ function actionLabel(action: PackageAction): string {
       return "Disabled"
     case "uninstall":
       return "Removed for user"
+    case "enable":
+      return "Enabled"
+    case "restore":
+      return "Restored"
     default:
       return assertNever(action)
   }

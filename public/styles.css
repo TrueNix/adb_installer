@@ -283,6 +283,20 @@ select:focus-visible,
   color: var(--text-tertiary);
 }
 
+.pair-panel {
+  margin-bottom: var(--space-4);
+}
+
+.pair-panel summary {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pair-panel .connect-row {
+  margin: var(--space-2) 0 0;
+}
+
 .device-list {
   display: grid;
   gap: var(--space-3);
@@ -457,6 +471,7 @@ select:focus-visible,
 
 .package-toolbar {
   align-items: end;
+  flex-wrap: wrap;
   margin-bottom: var(--space-3);
 }
 

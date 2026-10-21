@@ -23,6 +23,26 @@ describe("Server routing", () => {
     expect(response.status).toBe(403)
   })
 
+  it("rejects an incomplete pairing request before touching adb", async () => {
+    const response = await app.request("/api/pair", {
+      body: JSON.stringify({ address: "192.0.2.1:37829", code: "12" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+  })
+
+  it("rejects an unknown package filter before touching adb", async () => {
+    const response = await app.request("/api/packages/list", {
+      body: JSON.stringify({ serial: "192.0.2.1:5555", filter: "bogus" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+  })
+
   it("accepts same-origin API calls", async () => {
     const response = await app.request("/api/health", {
       headers: { host: "localhost:3000", origin: "http://localhost:3000" },

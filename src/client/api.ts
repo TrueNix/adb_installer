@@ -7,9 +7,11 @@ import {
   PackageActionRequestSchema,
   type PackageActionResponse,
   PackageActionResponseSchema,
+  type PackageFilter,
   PackageListRequestSchema,
   type PackageListResponse,
   PackageListResponseSchema,
+  PairRequestSchema,
   type ScanResponse,
   ScanResponseSchema,
 } from "../shared"
@@ -35,9 +37,17 @@ export async function requestInstall(serial: string, apk: File): Promise<Install
   return InstallResponseSchema.parse(await api.post("api/install", { body: form }).json())
 }
 
-export async function requestPackages(serial: string): Promise<PackageListResponse> {
-  const body = PackageListRequestSchema.parse({ serial })
+export async function requestPackages(
+  serial: string,
+  filter: PackageFilter,
+): Promise<PackageListResponse> {
+  const body = PackageListRequestSchema.parse({ serial, filter })
   return PackageListResponseSchema.parse(await api.post("api/packages/list", { json: body }).json())
+}
+
+export async function requestPair(address: string, code: string): Promise<ScanResponse> {
+  const body = PairRequestSchema.parse({ address, code })
+  return ScanResponseSchema.parse(await api.post("api/pair", { json: body }).json())
 }
 
 export async function requestPackageAction(

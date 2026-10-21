@@ -1,4 +1,4 @@
-import type { ActivityEvent, Device, ManagedPackage, PackageAction } from "../shared"
+import type { ActivityEvent, Device, ManagedPackage, PackageAction, PackageFilter } from "../shared"
 
 export type NoticeKind = "idle" | "success" | "error"
 
@@ -17,9 +17,11 @@ export type UiState = {
   readonly packageAction: PackageAction
   readonly packageApplying: boolean
   readonly packageConfirmed: boolean
+  readonly packageFilter: PackageFilter
   readonly packageLoading: boolean
   readonly packageSearch: string
   readonly packages: readonly ManagedPackage[]
+  readonly pairing: boolean
   readonly scanning: boolean
   readonly selectedSerial: string
   readonly selectedPackages: readonly string[]
@@ -37,9 +39,11 @@ let currentState: UiState = {
   packageAction: "disable",
   packageApplying: false,
   packageConfirmed: false,
+  packageFilter: "all",
   packageLoading: false,
   packageSearch: "",
   packages: [],
+  pairing: false,
   scanning: false,
   selectedSerial: "",
   selectedPackages: [],

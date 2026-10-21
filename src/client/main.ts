@@ -89,6 +89,28 @@ async function connect(address: string): Promise<void> {
   }
 }
 
+async function pair(address: string, code: string): Promise<void> {
+  setState({ pairing: true, notice: clearNotice() })
+  sync()
+  try {
+    const { requestPair } = await import("./api")
+    const response = await requestPair(address, code)
+    setState({ devices: response.devices })
+    setSelectedSerial(chooseSelectedSerial(getState().selectedSerial))
+    appendEvents(response.events)
+    elements.pairAddressInput.value = ""
+    elements.pairCodeInput.value = ""
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Pairing failed"
+    appendEvents([localEvent("error", message)])
+    setState({ notice: { kind: "error", text: message } })
+  } finally {
+    setState({ pairing: false })
+    sync()
+    autoLoadPackages()
+  }
+}
+
 async function install(): Promise<void> {
   const state = getState()
   if (state.apkFile === null || state.selectedSerial.length === 0) {
@@ -149,6 +171,18 @@ elements.connectForm.addEventListener("submit", (event) => {
     return
   }
   void connect(address)
+})
+
+elements.pairForm.addEventListener("submit", (event) => {
+  event.preventDefault()
+  const address = elements.pairAddressInput.value.trim()
+  const code = elements.pairCodeInput.value.trim()
+  if (address.length === 0 || !/^\d{6}$/.test(code)) {
+    setState({ notice: { kind: "error", text: "Enter the pairing address and 6-digit code" } })
+    sync()
+    return
+  }
+  void pair(address, code)
 })
 
 elements.installButton.addEventListener("click", () => {

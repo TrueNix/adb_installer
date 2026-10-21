@@ -4,7 +4,14 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { gzipSync } from "node:zlib"
 import { Hono } from "hono"
-import { AdbCommandError, connectAddress, installApk, installEvent, scanDevices } from "./adb"
+import {
+  AdbCommandError,
+  connectAddress,
+  installApk,
+  installEvent,
+  pairDevice,
+  scanDevices,
+} from "./adb"
 import { applyPackageAction, listPackages } from "./adb/packages"
 import {
   type ApiFailure,
@@ -13,6 +20,7 @@ import {
   InstallRequestSchema,
   PackageActionRequestSchema,
   PackageListRequestSchema,
+  PairRequestSchema,
 } from "./shared"
 
 const publicDir = join(import.meta.dir, "..", "public")
@@ -161,6 +169,19 @@ app.post("/api/connect", async (context) => {
   }
 })
 
+app.post("/api/pair", async (context) => {
+  try {
+    const body = PairRequestSchema.safeParse(await context.req.json())
+    if (!body.success) {
+      return context.json(apiFailure("Enter the pairing address and 6-digit code"), 400)
+    }
+    return context.json(await pairDevice(body.data.address, body.data.code))
+  } catch (error) {
+    const message = error instanceof Error ? errorMessage(error) : "Unexpected server failure"
+    return context.json(apiFailure(message), 500)
+  }
+})
+
 app.post("/api/install", async (context) => {
   const tempDir = await mkdtemp(join(tmpdir(), "adb-installer-"))
   try {
@@ -194,7 +215,7 @@ app.post("/api/packages/list", async (context) => {
     if (!body.success) {
       return context.json(apiFailure("Choose a connected device before loading apps"), 400)
     }
-    return context.json(await listPackages(body.data.serial))
+    return context.json(await listPackages(body.data.serial, body.data.filter))
   } catch (error) {
     const message = error instanceof Error ? errorMessage(error) : "Unexpected server failure"
     return context.json(apiFailure(message), 500)

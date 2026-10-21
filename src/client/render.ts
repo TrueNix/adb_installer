@@ -156,8 +156,12 @@ export function render(state: UiState, elements: ViewElements): void {
   renderSelection(state, elements)
   renderNotice(state, elements)
   renderPackages(state, elements)
-  elements.scanButton.disabled = state.scanning || state.installing || state.packageApplying
-  elements.connectButton.disabled = state.connecting || state.installing || state.packageApplying
+  elements.scanButton.disabled =
+    state.scanning || state.installing || state.packageApplying || state.pairing
+  elements.connectButton.disabled =
+    state.connecting || state.installing || state.packageApplying || state.pairing
+  elements.pairButton.disabled =
+    state.pairing || state.connecting || state.installing || state.packageApplying
   elements.installButton.disabled = !canInstall(state)
   elements.scanState.textContent = state.scanning ? "Scanning" : "Ready"
   elements.scanBadge.textContent = state.scanning ? "Scanning" : "ADB"

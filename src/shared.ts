@@ -87,7 +87,19 @@ export const AndroidPackageNameSchema = z
   .trim()
   .regex(/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$/)
 
-export const PackageActionSchema = z.union([z.literal("disable"), z.literal("uninstall")])
+export const PackageActionSchema = z.union([
+  z.literal("disable"),
+  z.literal("uninstall"),
+  z.literal("enable"),
+  z.literal("restore"),
+])
+
+export const PackageFilterSchema = z.union([
+  z.literal("all"),
+  z.literal("third-party"),
+  z.literal("disabled"),
+  z.literal("uninstalled"),
+])
 
 export const PackageIconSchema = z.union([
   z.literal("app"),
@@ -104,6 +116,7 @@ export const PackageIconSchema = z.union([
 export const PackageListRequestSchema = z
   .object({
     serial: z.string().trim().min(1),
+    filter: PackageFilterSchema.default("all"),
   })
   .readonly()
 
@@ -120,9 +133,20 @@ export const ManagedPackageSchema = z
 export const PackageListResponseSchema = z
   .object({
     serial: z.string(),
+    filter: PackageFilterSchema,
     packages: z.array(ManagedPackageSchema).readonly(),
     recommendedCount: z.number().int().nonnegative(),
     events: z.array(ActivityEventSchema).readonly(),
+  })
+  .readonly()
+
+export const PairRequestSchema = z
+  .object({
+    address: z.string().trim().min(3).max(120),
+    code: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/),
   })
   .readonly()
 
@@ -167,6 +191,7 @@ export type InstallResponse = z.infer<typeof InstallResponseSchema>
 export type ManagedPackage = z.infer<typeof ManagedPackageSchema>
 export type MdnsTarget = z.infer<typeof MdnsTargetSchema>
 export type PackageAction = z.infer<typeof PackageActionSchema>
+export type PackageFilter = z.infer<typeof PackageFilterSchema>
 export type PackageActionRequest = z.infer<typeof PackageActionRequestSchema>
 export type PackageActionResponse = z.infer<typeof PackageActionResponseSchema>
 export type PackageIcon = z.infer<typeof PackageIconSchema>
